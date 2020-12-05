@@ -1,4 +1,4 @@
-### Seq2Seq language translation  
+## Seq2Seq language translation  
 #### Flask app setup
 Download the [weights](https://www.dropbox.com/sh/vk9cnx17ldm68nv/AABMKk9UqyenIN5GeY5pee_Ya?dl=0) and place it in the 'models/weights' folder.  
 Install the requirements
