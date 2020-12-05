@@ -1,0 +1,35 @@
+<!doctype html>
+
+<style>
+  h1 {text-align: center;}
+  p {text-align: center;}
+  form {text-align: center;}
+  img {text-align: center;}
+  .footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem;
+    background-color: #efefef;
+    text-align: center;
+  }
+</style>
+
+<h1>Seq2Seq Translations - English to Spanish</h1>
+
+<form method="POST">
+  <p>English</p>
+  <input type="text" name="sentence" size="50">
+  <input type="submit" value="Translate">
+</form>
+<br>
+<p>{{data}}</p>
+<!-- {% if plot != None %} -->
+<p>
+<img src={{ url_for('attention') }} alt="Chart" height="500" width="500">
+</p>
+<!-- {% endif %} -->
+<footer>
+  <p><a href="https://github.com/karthikmuru/seq2seq-language-translation" target="_blank">Github</a></p>
+</footer>
