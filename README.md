@@ -11,5 +11,4 @@ flask run
 ```
 
 #### Preview
-
 ![alt text](https://github.com/karthikmuru/seq2seq-language-translation/blob/master/home.png)
