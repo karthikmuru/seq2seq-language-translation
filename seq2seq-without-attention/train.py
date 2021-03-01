@@ -9,15 +9,15 @@ from util import Util
 from vocab import Vocab
 from NMTModel import NMTModel
 
-inp_path = './data/train.tags.de-en.de'
-targ_path = './data/train.tags.de-en.en'
+inp_path = './data/english.txt'
+targ_path = './data/spanish.txt'
 d_model = 256
 n_units = 1024
 batch_size = 128
 EPOCHS = 10
 
 # Set this as None to train on full dataset
-NUM_EXAMPLES = 1000
+NUM_EXAMPLES = None
 
 def loss_function(real, pred):
   mask = tf.math.logical_not(tf.math.equal(real, 0))
@@ -41,7 +41,7 @@ def train_step(input, target):
 
     initialize_decoder = True
     for i in range(1, target.shape[1]):
-      predictions, dec_hidden, dec_cell = NMT.decoder(dec_input, dec_hidden, dec_cell, initialize_decoder)
+      predictions, _, _ = NMT.decoder(dec_input, dec_hidden, dec_cell, initialize_decoder)
       loss += loss_function(target[:, i], predictions)
       dec_input = tf.expand_dims(target[:, i], 1)
       initialize_decoder = False

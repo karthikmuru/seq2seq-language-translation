@@ -66,8 +66,8 @@ class Decoder(tf.keras.Model):
     self.d_model = d_model
     self.u_units = n_units
 
-    self.h_projection = tf.keras.layers.Dense(n_units)
-    self.c_projection = tf.keras.layers.Dense(n_units)
+    # self.h_projection = tf.keras.layers.Dense(n_units)
+    # self.c_projection = tf.keras.layers.Dense(n_units)
 
     self.embedding = tf.keras.layers.Embedding(self.vocab_size, d_model)
 
@@ -78,11 +78,7 @@ class Decoder(tf.keras.Model):
   def call(self, x, h_state, c_state, initialize = False):
     x = self.embedding(x)
 
-    if initialize:
-      h_state = self.h_projection(h_state)
-      c_state = self.c_projection(c_state)
-
     output, hidden_state, cell_state = self.LSTM(x, initial_state = [h_state, c_state])
 
-    x = self.fc(hidden_state)
-    return tf.keras.layers.Softmax()(x), hidden_state, cell_state
+    x = self.fc(output)
+    return x, hidden_state, cell_state
