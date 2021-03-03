@@ -1,5 +1,7 @@
 # Seq2Seq without attention
 
+Tensorflow implmentation of [Stanford CS224n assignment #4](https://web.stanford.edu/class/cs224n/assignments/a4.pdf) with some minor changes.
+
 ##### Training
 ```
 python3 train.py
