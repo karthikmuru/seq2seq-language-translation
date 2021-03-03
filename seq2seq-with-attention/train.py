@@ -17,7 +17,7 @@ batch_size = 128
 EPOCHS = 10
 
 # Set this as None to train on full dataset
-NUM_EXAMPLES = None
+NUM_EXAMPLES = 30000
 
 def loss_function(real, pred):
   mask = tf.math.logical_not(tf.math.equal(real, 0))
@@ -35,16 +35,14 @@ def train_step(input, target):
   loss = 0
   
   with tf.GradientTape() as tape:
-    enc_output, dec_hidden, dec_cell = NMT.encoder(input)
+    o_enc, h_enc, c_enc = NMT.encoder(input)
 
     dec_input = tf.expand_dims([NMT.vocab.tgt.word2index['<start>']] * 128, 1)
 
-    initialize_decoder = True
     for i in range(1, target.shape[1]):
-      predictions, _, _ = NMT.decoder(dec_input, dec_hidden, dec_cell, initialize_decoder)
+      predictions, _, _ = NMT.decoder(dec_input, h_enc, c_enc, o_enc)
       loss += loss_function(target[:, i], predictions)
       dec_input = tf.expand_dims(target[:, i], 1)
-      initialize_decoder = False
   
   batch_loss = (loss / int(target.shape[1]))
   variables = NMT.encoder.trainable_variables + NMT.decoder.trainable_variables

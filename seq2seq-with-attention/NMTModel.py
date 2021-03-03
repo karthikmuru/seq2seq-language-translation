@@ -20,27 +20,23 @@ class NMTModel(tf.keras.Model):
     ckpt.restore(weights_path)
   
   def translate(self, text):
-    MAX_LEN = 10
+    MAX_LEN = 50
     text = Util.preprocess(text)
     tensor = Util.text_to_sequence([text], self.vocab.src.tokenizer)
     
-    enc_output, dec_input, dec_cell = self.encoder(tensor)
+    o_enc, h_enc, c_enc = self.encoder(tensor)
     dec_input = tf.expand_dims([self.vocab.tgt.word2index['<start>']], 1)
 
     translation = []
-
-    initialize_decoder = True
     
     while(dec_input[0][0] != self.vocab.tgt.index2word['<end>'] | len(translation) <= MAX_LEN ):
-      prediction, dec_hidden, dec_cell = self.decoder(dec_input, dec_hidden, dec_cell)
+      prediction, _, _ = self.decoder(dec_input, h_enc, c_enc, o_enc)
       print(prediction)
       dec_input = prediction
       translation.append(prediction[0][0])
 
     return translation;
     
-
-
 class Encoder(tf.keras.Model):
   def __init__(self, vocab_size, d_model, n_units):
     super(Encoder, self).__init__()
@@ -64,7 +60,9 @@ class Decoder(tf.keras.Model):
     
     self.vocab_size = vocab_size + 1
     self.d_model = d_model
-    self.u_units = n_units
+    self.n_units = n_units
+
+    self.attention = Attention(n_units)
 
     # self.h_projection = tf.keras.layers.Dense(n_units)
     # self.c_projection = tf.keras.layers.Dense(n_units)
@@ -73,12 +71,46 @@ class Decoder(tf.keras.Model):
 
     self.LSTM = tf.keras.layers.LSTM(n_units, return_sequences = True, return_state = True,
                                      recurrent_initializer='glorot_uniform')
-    self.fc = tf.keras.layers.Dense(self.vocab_size, activation = tf.keras.activations.tanh)
+    self.fc1 = tf.keras.layers.Dense(self.n_units, activation = tf.keras.activations.tanh, input_shape=(None, 2*self.n_units))
+    self.fc2 = tf.keras.layers.Dense(self.vocab_size, activation = tf.keras.activations.tanh)
 
-  def call(self, x, h_state, c_state, initialize = False):
+  def call(self, x, h_state, c_state, h_enc_output):
     x = self.embedding(x)
 
-    output, hidden_state, cell_state = self.LSTM(x, initial_state = [h_state, c_state])
+    o_dec, h_dec, c_dec = self.LSTM(x)
 
-    x = self.fc(output)
-    return x, hidden_state, cell_state
+    a = self.attention(h_enc_output, h_dec)
+
+    u_t = tf.concat([a, tf.squeeze(o_dec)], axis=1)
+    # u_t -> (batch_size, 2*n_units)
+
+    o_t = self.fc1(u_t)
+    # o_t -> (batch_size, n_units)
+
+    p_t = self.fc2(o_t)
+    # p_t -> (batch_size, tgt_vocab_size)
+
+    return p_t, h_dec, c_dec
+
+class Attention(tf.keras.layers.Layer):
+  def __init__(self, n_units):
+    super(Attention, self).__init__()
+
+    self.n_units = n_units
+    self.attention_projection = tf.keras.layers.Dense(n_units)
+
+  def call(self, h_enc, h_dec):
+    # h_enc -> (batch_size, seq_len, n_units)
+    h_enc = self.attention_projection(h_enc)
+    
+    # h_dec -> (batch_size, n_units)
+    h_dec = tf.expand_dims(h_dec, 1)
+    # h_dec -> (batch_size, 1, n_units)
+
+    alpha = tf.squeeze(tf.linalg.matmul(h_enc, h_dec, transpose_b=True))
+    # alpha -> (batch_size, seq_len)
+
+    attention = tf.squeeze(tf.linalg.matmul(tf.expand_dims(alpha, 1), h_enc))
+    # attention -> (batch_size, n_units)
+    
+    return attention
