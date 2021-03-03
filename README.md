@@ -14,4 +14,4 @@ flask run
 ![alt text](https://github.com/karthikmuru/seq2seq-language-translation/blob/master/home.png)
 
 
-[Stanford CS224n assignment #4](https://web.stanford.edu/class/cs224n/assignments/a4.pdf) implementation is found in this [folder](./seq2seq-with-attention)
+Tensorflow implementation of [Stanford CS224n assignment #4](https://web.stanford.edu/class/cs224n/assignments/a4.pdf) is found in this [folder](./seq2seq-with-attention)
